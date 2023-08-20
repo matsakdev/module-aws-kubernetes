@@ -95,11 +95,13 @@ resource "aws_eks_node_group" "ms-node-group" {
   node_group_name = "microservices"
   node_role_arn   = aws_iam_role.ms-node.arn
   subnet_ids      = var.nodegroup_subnet_ids
+
   scaling_config {
     desired_size = var.nodegroup_desired_size
     max_size     = var.nodegroup_max_size
     min_size     = var.nodegroup_min_size
   }
+
   disk_size      = var.nodegroup_disk_size
   instance_types = var.nodegroup_instance_types
 
@@ -112,32 +114,31 @@ resource "aws_eks_node_group" "ms-node-group" {
 
 # Создание файла kubeconfig на основе имеющегося кластера
 resource "local_file" "kubeconfig" {
-  content  = <<KUBECONFIG_END
+  content  = <<KUBECONFIG
 apiVersion: v1
 clusters:
-  - cluster:
-      "certificate-authority-data: >
-        ${aws_eks_cluster.ms-up-running.certificate_authority.0.data}"
-          server: ${aws_eks_cluster.ms-up-running.endpoint}
-      name: ${aws_eks_cluster.ms-up-running.arn}
+- cluster:
+    certificate-authority-data: ${aws_eks_cluster.ms-up-running.certificate_authority.0.data}
+    server: ${aws_eks_cluster.ms-up-running.endpoint}
+  name: ${aws_eks_cluster.ms-up-running.arn}
 contexts:
-  - context:
+- context:
     cluster: ${aws_eks_cluster.ms-up-running.arn}
     user: ${aws_eks_cluster.ms-up-running.arn}
-    name: ${aws_eks_cluster.ms-up-running.arn}
-    current-context: ${aws_eks_cluster.ms-up-running.arn}
-    kind: Config
-    preferences: {}
+  name: ${aws_eks_cluster.ms-up-running.arn}
+current-context: ${aws_eks_cluster.ms-up-running.arn}
+kind: Config
+preferences: {}
 users:
-  - name: ${aws_eks_cluster.ms-up-running.arn}
-    user:
-      exec:
-        apiVersion: client.authentication.k8s.io/v1beta1
-        command: aws-iam-authenticator
-        args:
-          - "token"
-          - "-i"
-          - "${aws_eks_cluster.ms-up-running.name}"
-    KUBECONFIG_END
+- name: ${aws_eks_cluster.ms-up-running.arn}
+  user:
+    exec:
+      apiVersion: client.authentication.k8s.io/v1beta1
+      command: aws-iam-authenticator
+      args:
+        - "token"
+        - "-i"
+        - "${aws_eks_cluster.ms-up-running.name}"
+    KUBECONFIG
   filename = "kubeconfig"
 }
