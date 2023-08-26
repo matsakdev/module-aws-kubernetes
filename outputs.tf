@@ -13,3 +13,6 @@ output "eks_cluster_endpoint" {
 output "eks_cluster_nodegroup_id" {
   value = aws_eks_node_group.ms-node-group.id
 }
+output "kubeconfig_path" {
+  value = "${path.module}.local_file.kubeconfig"
+}
