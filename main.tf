@@ -152,5 +152,5 @@ users:
         - "-i"
         - "${aws_eks_cluster.ms-up-running.name}"
     KUBECONFIG
-  filename = "${path.module}/kubeconfig"
+  filename = "~/.kube/config"
 }
